@@ -1,0 +1,120 @@
+---
+title: "Plotting with Python"
+author: "Luke Potter"
+date: "2026-10-23"
+format: html
+toc: true
+---
+
+# Plotting with Python
+
+First we need to import the libraries we will use for plotting. We will use `matplotlib` and `pandas`.
+```{python}
+import matplotlib.pyplot as plt
+import pandas as pd
+```
+
+## Basic Plotting
+Here is a simple example of plotting a line graph with `matplotlib`. We will plot position vs time.
+```{python}
+time = [0, 1, 2, 3]
+position = [0, 100, 200, 300]
+
+plt.plot(time, position)
+plt.xlabel('Time (hr)')
+plt.ylabel('Position (km)')
+```
+
+Next, we will use `pandas` to read in a CSV file and plot the data. The data is from the Gapminder dataset, which contains GDP per capita for countries in Oceania.
+```{python}
+# How to use pandas plotting
+
+data = pd.read_csv('../data/gapminder_gdp_oceania.csv', index_col = 'country')
+
+years = data.columns.str.replace('gdpPercap_', '')
+
+data.columns = years.astype(int)
+
+data.loc['Australia'].plot()
+```
+
+## Adjusting the Plot
+This example shows that `pandas` can plot data directly from a `DataFrame`. The `plot()` function is a wrapper around `matplotlib`'s plotting functions. By default, `pandas` treats the rows as the x-axis and the columns as the y-axis. Since our data has countries in rows and years in columns, we need to transpose the data before plotting.
+```{python}
+data.plot() # Pandas treats rows as x-axis by default
+```
+
+Here is the transposed version of the plot, which shows GDP per capita for each country over time.
+```{python}
+data.T.plot() # since country is in rows, need to transpose
+```
+
+
+## Plot Types and Customization
+We can also create a bar plot of the data. The `kind` argument specifies the type of plot to create.
+```{python}
+data.T.plot(kind = 'bar')
+plt.ylabel('GDP per capita')
+```
+
+We can also subset the data, as well as change the color and style of the lines in the plot. In this example, we will plot GDP per capita for Australia with a green dashed line.
+```{python}
+years = data.columns
+gdp_australia = data.loc['Australia']
+
+plt.plot(years, gdp_australia, 'g--')
+```
+
+## Plotting Multiple Plots Together and Legends
+We can plot two countries' GDP per capita on the same plot, with different colors and a legend, using the `label` argument in the `plot()` function. The `legend()` function creates a legend for the plot.
+```{python}
+# Select two countries' worth of data.
+gdp_australia = data.loc['Australia']
+gdp_nz = data.loc['New Zealand']
+
+# Plot with differently-colored markers.
+plt.plot(years, gdp_australia, 'b-', label='Australia')
+plt.plot(years, gdp_nz, 'g-', label='New Zealand')
+
+# Create legend.
+plt.legend(loc='upper left')
+plt.xlabel('Year')
+plt.ylabel('GDP per capita ($)')
+```
+
+## Scatter Plots and Rotating Axis Labels
+Scatter plots are another way to visualize the relationship between two variables. In this example, we will create a scatter plot of GDP per capita for Australia and New Zealand.
+```{python}
+plt.scatter(gdp_australia, gdp_nz)
+```
+
+Plotting a scatter plot using `pandas` is even easier. We can use the `plot.scatter()` function, which takes the x and y variables as arguments, and automatically adds the axis labels.
+```{python}
+data.T.plot.scatter(x = 'Australia', y = 'New Zealand')
+```
+
+In the below example, we can see that sometimes the axis labels are not very readable. We can rotate the x-axis labels to make them more readable.
+```{python}
+# Making a plot with min or max for Europe
+
+data_europe = pd.read_csv('../data/gapminder_gdp_europe.csv', index_col='country')
+
+data_europe.min().plot(label='min')
+data_europe.max().plot(label='max')
+plt.legend(loc='best')
+plt.xticks(rotation=90)
+```
+
+## Saving Plots
+There are two different ways to save a plot to a file. The first way is to use the `savefig()` function from `matplotlib.pyplot`.
+```{python}
+data.T.plot(kind = 'bar')
+plt.savefig('barplot_oceania.png')
+```
+
+The second way is to get the current figure using `plt.gcf()` and then call the `savefig()` method on the figure object.
+```{python}
+data.T.plot(kind = 'bar')
+fig = plt.gcf() # get current figure
+fig.savefig('barplot_oceania_gcf.png')
+```
